@@ -15,6 +15,7 @@ type Table struct {
 
 	Duration  time.Duration
 	Spaghetti chan int
+	Step      int
 }
 
 func NewTable(
@@ -41,6 +42,7 @@ func NewTable(
 		Forks:     forks,
 		Duration:  duration,
 		Spaghetti: spaghetti,
+		Step:      0,
 	}
 	go t.Refill()
 	return t
@@ -54,7 +56,8 @@ func (t *Table) Serve() {
 
 		// TODO: wait till done all steps
 
-		<-time.Tick(t.Duration)
+		time.Sleep(t.Duration)
+		t.Step++
 		log.Println()
 	}
 }
@@ -64,7 +67,7 @@ func (t *Table) Refill() {
 	for {
 		id := <-t.Spaghetti
 		count[id]++
-		log.Printf("Spaghetti: %v", count)
+		log.Printf("Spaghetti at %d: %v", t.Step, count)
 	}
 }
 
