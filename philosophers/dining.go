@@ -13,31 +13,37 @@ type Table struct {
 	Diners []Philosopher
 	Forks  []*Fork
 
-	Duration time.Duration
+	Duration  time.Duration
+	Spaghetti chan int
 }
 
 func NewTable(
 	numDiners int,
 	duration time.Duration,
-	newDiner func(int, *Fork, *Fork) Philosopher,
+	newDiner func(int, *Fork, *Fork, chan int) Philosopher,
 ) *Table {
 	forks := make([]*Fork, numDiners)
 	for i := 0; i < numDiners; i++ {
 		forks[i] = NewFork(i)
 	}
 
+	spaghetti := make(chan int, 1000)
+
 	diners := []Philosopher{}
 	for i := 0; i < numDiners; i++ {
 		leftFork := forks[i]
 		rightFork := forks[(i+1)%numDiners]
-		d := newDiner(i, leftFork, rightFork)
+		d := newDiner(i, leftFork, rightFork, spaghetti)
 		diners = append(diners, d)
 	}
-	return &Table{
-		Diners:   diners,
-		Forks:    forks,
-		Duration: duration,
+	t := &Table{
+		Diners:    diners,
+		Forks:     forks,
+		Duration:  duration,
+		Spaghetti: spaghetti,
 	}
+	go t.Refill()
+	return t
 }
 
 func (t *Table) Serve() {
@@ -53,8 +59,17 @@ func (t *Table) Serve() {
 	}
 }
 
+func (t *Table) Refill() {
+	count := make([]int, len(t.Diners))
+	for {
+		id := <-t.Spaghetti
+		count[id]++
+		log.Printf("Spaghetti: %v", count)
+	}
+}
+
 func main() {
 	numDiners := 5
-	table := NewTable(numDiners, time.Second*2, NewSimple)
+	table := NewTable(numDiners, time.Second*2, NewParity)
 	table.Serve()
 }

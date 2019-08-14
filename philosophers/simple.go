@@ -8,14 +8,16 @@ type Simple struct {
 
 	LeftFork  *Fork
 	RightFork *Fork
+	Spaghetti chan int
 }
 
-func NewSimple(id int, leftFork *Fork, rightFork *Fork) Philosopher {
+func NewSimple(id int, leftFork *Fork, rightFork *Fork, spaghetti chan int) Philosopher {
 	return &Simple{
 		Id:        id,
 		State:     0,
 		LeftFork:  leftFork,
 		RightFork: rightFork,
+		Spaghetti: spaghetti,
 	}
 }
 
@@ -50,4 +52,5 @@ func (s *Simple) Act() {
 
 func (s *Simple) Eat() {
 	log.Printf("Philosopher %d is eating", s.Id)
+	s.Spaghetti <- s.Id
 }
