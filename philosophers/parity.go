@@ -21,7 +21,7 @@ func NewParity(id int, leftFork *Fork, rightFork *Fork, spaghetti chan int) Phil
 	}
 }
 
-func (p *Parity) Act() {
+func (p *Parity) Act(done chan<- int) {
 	if p.State == 0 {
 		fork := p.LeftFork
 		if p.Id%2 == 0 {
@@ -56,6 +56,7 @@ func (p *Parity) Act() {
 		p.State = 0
 		log.Printf("Philosopher %d released left fork %d", p.Id, p.LeftFork.Id)
 	}
+	done <- 1
 }
 
 func (p *Parity) Eat() {

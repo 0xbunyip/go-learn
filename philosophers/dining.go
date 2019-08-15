@@ -6,7 +6,7 @@ import (
 )
 
 type Philosopher interface {
-	Act()
+	Act(chan<- int)
 }
 
 type Table struct {
@@ -49,12 +49,15 @@ func NewTable(
 }
 
 func (t *Table) Serve() {
+	done := make(chan int, len(t.Diners))
 	for {
 		for _, d := range t.Diners {
-			go d.Act()
+			go d.Act(done)
 		}
 
-		// TODO: wait till done all steps
+		for i := 0; i < len(t.Diners); i++ {
+			<-done
+		}
 
 		time.Sleep(t.Duration)
 		t.Step++

@@ -21,7 +21,7 @@ func NewSimple(id int, leftFork *Fork, rightFork *Fork, spaghetti chan int) Phil
 	}
 }
 
-func (s *Simple) Act() {
+func (s *Simple) Act(done chan<- int) {
 	if s.State == 0 {
 		if got := TryFork(s.LeftFork, s.Id); got > 0 {
 			s.State = 1
@@ -48,6 +48,7 @@ func (s *Simple) Act() {
 		s.State = 0
 		log.Printf("Philosopher %d released left fork %d", s.Id, s.LeftFork.Id)
 	}
+	done <- 1
 }
 
 func (s *Simple) Eat() {
